@@ -23,6 +23,8 @@ const Carousel = styled.div(() => ({
     display: 'none',
   },
   position: 'relative',
+  scrollSnapType: 'x mandatory'      
+  
 }));
 
 const CarouselItem = styled.div(() => ({
@@ -44,15 +46,18 @@ const Content = styled.div(() => ({
   },
 }));
 
+
 const Button = styled.button(() => ({
   position: 'absolute',
-  bottom: 0,
+  button:0,
   backgroundColor: 'rgba(255, 255, 255, 0.5)',
   border: 'none',
   color: '#000',
   fontSize: '20px',
   cursor: 'pointer',
   height: '50px',
+  top:'50%',                    //This is for fix the button position at center.
+  transform: 'translateY(-50%)', 
 }));
 
 const PrevButton = styled(Button)`
@@ -63,13 +68,41 @@ const NextButton = styled(Button)`
   right: 10px;
 `;
 
+const InitialsCircle = styled.div(() => ({
+  width: '40px',
+  height: '40px',
+  borderRadius: '50%',
+  backgroundColor: '#333333',
+  color: '#fff',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontSize: '16px',
+  fontWeight: 'bold',
+  marginRight: '10px', // Spacing between the icon and the text
+}));
+
+const UserInfo = styled.div(() => ({
+  display: 'flex',
+  alignItems: 'center', // Align items vertically
+  '& > div > p': {
+    fontSize: '13px',
+  },
+
+}));
+
+
 const Post = ({ post }) => {
   const carouselRef = useRef(null);
+
+  // console.log("check : ",post.user);
+
+  const scrollAmount = 300;  //This is for scroll to new image. image width = 280px, 10px space form both side so 300
 
   const handleNextClick = () => {
     if (carouselRef.current) {
       carouselRef.current.scrollBy({
-        left: 50,
+        left: scrollAmount,
         behavior: 'smooth',
       });
     }
@@ -78,14 +111,28 @@ const Post = ({ post }) => {
   const handlePrevClick = () => {
     if (carouselRef.current) {
       carouselRef.current.scrollBy({
-        left: -70,
+        left: -scrollAmount,
         behavior: 'smooth',
       });
     }
   };
 
+  const getInitials = (name) =>{
+    const [firstName, lastName] = name.split(' ');
+    return `${firstName.charAt(0)}${lastName ? lastName.charAt(0):''}`;
+  }; 
+
   return (
     <PostContainer>
+       <Content>
+         <UserInfo>
+          <InitialsCircle>{getInitials(post.user.name)}</InitialsCircle>
+          <div>
+          <h4>{post.user.name}</h4>
+          <p>{post.user.email}</p>
+          </div>
+         </UserInfo>
+        </Content>
       <CarouselContainer>
         <Carousel ref={carouselRef}>
           {post.images.map((image, index) => (
@@ -108,9 +155,11 @@ const Post = ({ post }) => {
 Post.propTypes = {
   post: PropTypes.shape({
     content: PropTypes.any,
-    images: PropTypes.shape({
-      map: PropTypes.func,
-    }),
+    images: PropTypes.arrayOf(  //Here fixed the warning that is image type related.
+      PropTypes.shape({
+        url: PropTypes.string,
+      })
+    ),
     title: PropTypes.any,
   }),
 };
